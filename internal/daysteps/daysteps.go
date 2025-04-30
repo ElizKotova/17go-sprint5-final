@@ -1,13 +1,61 @@
 package daysteps
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/Yandex-Practicum/tracker/internal/personaldata"
+	"github.com/Yandex-Practicum/tracker/internal/spentenergy"
+)
+
 type DaySteps struct {
-	// TODO: добавить поля
+	Steps                 int           //Количество шагов.
+	Duration              time.Duration //Длительность прогулки.
+	personaldata.Personal               //Встроенная структура Personal из пакета personaldata
 }
 
 func (ds *DaySteps) Parse(datastring string) (err error) {
-	// TODO: реализовать функцию
+	parts := strings.Split(datastring, ",")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid data format") //Метод возвращает ошибку.
+	}
+
+	steps, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return fmt.Errorf("error parsing number of steps: %v", err)
+	}
+	if steps <= 0 {
+		return fmt.Errorf("number of steps must be positive")
+	}
+	ds.Steps = steps
+
+	duration, err := time.ParseDuration(parts[1])
+	if err != nil {
+		return fmt.Errorf("error parsing duration: %v", err)
+	}
+	if duration <= 0 {
+		return fmt.Errorf("duration must be positive")
+	}
+	ds.Duration = duration
+
+	return nil
 }
 
 func (ds DaySteps) ActionInfo() (string, error) {
-	// TODO: реализовать функцию
+	if ds.Steps <= 0 || ds.Weight <= 0 || ds.Height <= 0 || ds.Duration <= 0 {
+		return "", fmt.Errorf("invalid input parameters: steps, weight, height, and duration must be positive")
+	}
+
+	distance := spentenergy.Distance(ds.Steps, ds.Height)                                          //Вычислите дистанцию.
+	calories, err := spentenergy.WalkingSpentCalories(ds.Steps, ds.Weight, ds.Height, ds.Duration) //Вычислите количество сожжённых калорий.
+	if err != nil {                                                                                //При возникновении ошибки верните пустую строку и ошибку.
+		return "", fmt.Errorf("error calculating calories: %v", err)
+	}
+	//Сформируйте и верните строку с информацией.
+	info := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n",
+		ds.Steps, distance, calories)
+
+	return info, nil
 }
