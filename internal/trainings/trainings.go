@@ -48,9 +48,9 @@ func (t Training) ActionInfo() (string, error) {
 	var err error
 
 	switch strings.ToLower(t.TrainingType) { //Проверить, какой вид тренировки содержится в структуре Training.
-	case "бег": //Рассчитать калории, используя функцию из пакета spentenergy.
+	case "Бег": //Рассчитать калории, используя функцию из пакета spentenergy.
 		calories, err = spentenergy.RunningSpentCalories(t.Steps, t.Weight, t.Height, t.Duration)
-	case "ходьба": //Рассчитать калории, используя функцию из пакета spentenergy.
+	case "Ходьба": //Рассчитать калории, используя функцию из пакета spentenergy.
 		calories, err = spentenergy.WalkingSpentCalories(t.Steps, t.Weight, t.Height, t.Duration)
 	default: //Если был передан неизвестный тип тренировки, верните ошибку с текстом неизвестный тип тренировки.
 		return "", fmt.Errorf("неизвестный тип тренировки: %s", t.TrainingType) //Если тип тренировки не соответствует ни одному из известных, вернуть ошибку.
