@@ -26,11 +26,17 @@ func (ds *DaySteps) Parse(datastring string) (err error) {
 	if err != nil {
 		return fmt.Errorf("error parsing number of steps: %v", err)
 	}
+	if steps <= 0 {
+		return fmt.Errorf("number of steps must be positive")
+	}
 	ds.Steps = steps
 
 	duration, err := time.ParseDuration(parts[1])
 	if err != nil {
 		return fmt.Errorf("error parsing duration: %v", err)
+	}
+	if duration <= 0 {
+		return fmt.Errorf("duration must be positive")
 	}
 	ds.Duration = duration
 
@@ -38,16 +44,17 @@ func (ds *DaySteps) Parse(datastring string) (err error) {
 }
 
 func (ds DaySteps) ActionInfo() (string, error) {
-	const stepLength = 0.7
-	const caloriesPerKm = 50.0
+	if ds.Steps <= 0 || ds.Weight <= 0 || ds.Height <= 0 || ds.Duration <= 0 {
+		return "", fmt.Errorf("invalid input parameters: steps, weight, height, and duration must be positive")
+	}
 
-	distance := float64(ds.Steps) * stepLength / spentenergy.MInKm                                 //Вычислите дистанцию.
+	distance := spentenergy.Distance(ds.Steps, ds.Height)                                          //Вычислите дистанцию.
 	calories, err := spentenergy.WalkingSpentCalories(ds.Steps, ds.Weight, ds.Height, ds.Duration) //Вычислите количество сожжённых калорий.
 	if err != nil {                                                                                //При возникновении ошибки верните пустую строку и ошибку.
 		return "", fmt.Errorf("error calculating calories: %v", err)
 	}
 	//Сформируйте и верните строку с информацией.
-	info := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.",
+	info := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n",
 		ds.Steps, distance, calories)
 
 	return info, nil
